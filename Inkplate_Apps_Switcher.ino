@@ -5,10 +5,7 @@
 #include <WiFiClient.h>
 #include <uri/UriBraces.h>
 #include "Network.h"
-
-#define ssid ""
-#define pass ""
-#define REFRESH_DELAY 6000
+#include "config.h"
 
 // App state management
 enum AppState {
@@ -25,14 +22,11 @@ SdFile folder, file;
 // App state variables
 AppState currentApp = PICTURE_APP;
 RTC_DATA_ATTR uint16_t lastImageIndex = 0;
-const char folderPath[] = "/images/";
 
 // Timer variables
 unsigned long lastQuoteRefresh = 0;
 unsigned long lastPictureRefresh = 0;
 unsigned long refreshTime = 0;
-const unsigned long QUOTE_REFRESH_INTERVAL = 300000;  // 5 minutes
-const unsigned long PICTURE_REFRESH_INTERVAL = 60000; // 1 minute
 
 // Todo list variables
 IPAddress serverIP;
@@ -44,19 +38,6 @@ std::vector<bool> checkedStatus;
 char date[64];
 int n = 0;
 
-// Quote structure
-struct Quote {
-    const char* text;
-    const char* author;
-};
-
-// Array of quotes
-const Quote quotes[] = {
-    {"inser quote here", "author"},
-
-};
-
-const int numQuotes = sizeof(quotes) / sizeof(quotes[0]);
 RTC_DATA_ATTR int currentQuoteIndex = 0;
 
 void setup() {
@@ -78,7 +59,7 @@ void setup() {
     display.apds9960.setGestureGain(0);
 
     // Initialize network and web server
-    network.begin(ssid, pass);
+    network.begin(WIFI_SSID, WIFI_PASSWORD);
     serverIP = WiFi.localIP();
     server.on("/", handleRoot);
     server.on(UriBraces("/string/{}"), handleString);

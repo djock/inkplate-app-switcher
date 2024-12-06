@@ -1,0 +1,22 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// WiFi credentials
+#define WIFI_SSID "your_ssid_here"
+#define WIFI_PASSWORD "your_password_here"
+
+// Quote structure definition
+struct Quote {
+    const char* text;
+    const char* author;
+};
+
+// Add your quotes here
+const Quote quotes[] = {
+    {"Example quote 1", "Author 1"},
+    {"Example quote 2", "Author 2"}
+};
+
+const int numQuotes = sizeof(quotes) / sizeof(quotes[0]);
+
+#endif
