@@ -21,7 +21,6 @@ SdFile folder, file;
 
 // App state variables
 AppState currentApp = PICTURE_APP;
-RTC_DATA_ATTR uint16_t lastImageIndex = 0;
 
 // Timer variables
 unsigned long lastQuoteRefresh = 0;
@@ -141,19 +140,33 @@ void displayNextImage() {
     if (!display.sdCardInit()) {
         return;
     }
-
+    
     if (folder.open(folderPath)) {
+        // Count total images first
+        uint16_t totalImages = 0;
+        while (file.openNext(&folder, O_RDONLY)) {
+            totalImages++;
+            file.close();
+        }
+        folder.rewind();
+        
+        // Skip to last known position
+        for (uint16_t i = 0; i <= lastImageIndex; i++) {
+            file.openNext(&folder, O_RDONLY);
+            file.close();
+        }
+        
+        // Open next image or wrap around
         if (!file.openNext(&folder, O_RDONLY)) {
             lastImageIndex = 0;
             folder.rewind();
             file.openNext(&folder, O_RDONLY);
+        } else {
+            lastImageIndex = (lastImageIndex + 1) % totalImages;
         }
-
-        lastImageIndex = file.dirIndex();
         
         char pictureName[100];
         file.getName(pictureName, 100);
-        
         char path[120];
         strcpy(path, folderPath);
         strcat(path, pictureName);
