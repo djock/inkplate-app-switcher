@@ -56,18 +56,14 @@ void setup() {
     }
     display.apds9960.enableGestureSensor();
     display.apds9960.setGestureGain(0);
-
-    // Initialize network and web server
-    network.begin(WIFI_SSID, WIFI_PASSWORD);
-    serverIP = WiFi.localIP();
-    server.on("/", handleRoot);
-    server.on(UriBraces("/string/{}"), handleString);
-    server.begin();
+    
 
     // Initialize SD card
     if (!display.sdCardInit()) {
         Serial.println("SD Card initialization failed!");
     }
+
+    initializeImageVariables();
 
     // Start with picture display
     displayNextImage();
@@ -185,15 +181,15 @@ void switchToNextApp() {
     
     switch (currentApp) {
         case PICTURE_APP:
+            stopServer();
             displayNextImage();
             break;
         case QUOTE_APP:
-//            if (network.getData(quote, author, &len, &display)) {
-//                drawNetworkQuote();
-//            }
-              drawLocalQuote();
+            stopServer();
+            drawLocalQuote();
             break;
         case TODO_APP:
+            startServer();
             drawToDo();
             break;
     }
@@ -241,58 +237,6 @@ void drawToDo() {
     display.display();
 }
 
-
-//void drawNetworkQuote() {
-//    display.clearDisplay();
-//    display.setTextColor(0); 
-//
-//    // Display current time
-//    displayTime();
-//
-//    int startX = 50;
-//    int startY = 150;
-//    int lineHeight = 48; // Adjust based on your font size
-//
-//    display.setCursor(startX, startY);
-//
-//    std::vector<String> words;
-//    char *word = strtok(quote, " ");
-//    while (word != nullptr) {
-//        words.push_back(String(word));
-//        word = strtok(nullptr, " ");
-//    }
-//
-//    int currentRow = 0;
-//    String currentLine;
-//
-//    for (const auto &word : words) {
-//        String tempLine = currentLine + (currentLine.isEmpty() ? "" : " ") + word;
-//        int16_t x1, y1;
-//        uint16_t w, h;
-//        display.getTextBounds(tempLine.c_str(), startX, startY + (lineHeight * currentRow), &x1, &y1, &w, &h);
-//
-//        if ((x1 + w) > 560) { // If the word doesn't fit in the current line
-//            // Print the current line and move to the next row
-//            display.print(currentLine);
-//            display.setCursor(startX, startY + (lineHeight * ++currentRow));
-//            currentLine = word; // Start new line with the current word
-//        } else {
-//            currentLine = tempLine; // Add word to the current line
-//        }
-//    }
-//
-//    // Print the last line if there's any remaining text
-//    if (!currentLine.isEmpty()) {
-//        display.print(currentLine);
-//    }
-//
-//    // Print author
-//    display.setCursor(startX, startY + (lineHeight * (++currentRow)));
-//    display.print("- ");
-//    display.println(author);
-//
-//    display.display(); // Refresh screen with new content
-//}
 
 void drawLocalQuote() {
     currentQuoteIndex = (currentQuoteIndex + 1) % numQuotes;
@@ -421,4 +365,16 @@ void deleteTodoItem(int index) {
       checkedStatus.erase(checkedStatus.begin() + index);
       drawToDo();
   }
+}
+
+void startServer() {
+  network.begin(WIFI_SSID, WIFI_PASSWORD);
+  serverIP = WiFi.localIP();
+  server.on("/", handleRoot);
+  server.on(UriBraces("/string/{}"), handleString);
+  server.begin();
+}
+
+void stopServer() {
+  server.stop();
 }
