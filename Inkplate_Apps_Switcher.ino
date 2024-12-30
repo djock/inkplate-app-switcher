@@ -63,8 +63,6 @@ void setup() {
         Serial.println("SD Card initialization failed!");
     }
 
-    initializeImageVariables();
-
     // Start with picture display
     displayNextImage();
 }
@@ -158,7 +156,7 @@ void displayNextImage() {
             folder.rewind();
             file.openNext(&folder, O_RDONLY);
         } else {
-            lastImageIndex = (lastImageIndex + 1) % totalImages;
+            lastImageIndex = (lastImageIndex + 1); // % totalImages;
         }
         
         char pictureName[100];
@@ -166,6 +164,9 @@ void displayNextImage() {
         char path[120];
         strcpy(path, folderPath);
         strcat(path, pictureName);
+
+        Serial.println(pictureName);
+        Serial.println(lastImageIndex);
         
         display.clearDisplay();
         display.drawImage(path, 0, 0, 1, 0);
